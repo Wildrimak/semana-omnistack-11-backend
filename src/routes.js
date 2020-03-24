@@ -1,4 +1,7 @@
 const express = require('express');
+const crypto = require('crypto');
+
+const connection = require('./database/connection');
 
 const routes = express.Router();
 
@@ -9,22 +12,35 @@ const routes = express.Router();
  * Query Params: Parâmetros nomeados enviados na rota após "?" (Filtros, paginação)
  * Route Params: Parâmetros utilizados para identificar recursos
  * Request Body: Corpo da requisição, utilizado para criar ou alterar recursos
+ * 
+ * const params = request.query; //Obtem os parametros da request
+ * const id = request.params; // Obtem os routes params;
+ * const body = request.body; // Obtem o corpo da request;
+ *  
  */
 
-routes.post('/users', (request, response) => {
+
+routes.get('/ongs', async (request, response) => {
+
+    const ongs = await connection('ongs').select('*');
+    return response.json(ongs);
+
+});
+
+routes.post('/ongs', async (request, response) => {
   
-    const params = request.query; //Obtem os parametros da request
-    const id = request.params; // Obtem os routes params;
-    const body = request.body; // Obtem o corpo da request;
-  
-    console.log(params);
-    console.log(id);
-    console.log(body);
-    
-    return response.json({
-        evento: "Semana Omnistack 11",
-        aluno: "Super Wildrimak"
+    const { name, email, whatsapp, city, uf } = request.body;
+    const id = crypto.randomBytes(4).toString('HEX');
+
+    await connection('ongs').insert({
+        id,
+        name,
+        email,
+        whatsapp, 
+        city, 
+        uf,
     });
+    return response.json({ id });
 });
 
 //Assim que se exporta variaveis de dentro de um arquivo usando o node;
